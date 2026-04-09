@@ -4,6 +4,8 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import InputTextField from "../components/InputTextField";
 
+const Register_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/user/signup`;
+
 type FormValues = {
   firstName: string;
   lastName: string;
@@ -168,7 +170,7 @@ export default function RegisterPage() {
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextErrors: FormErrors = {
@@ -189,21 +191,28 @@ export default function RegisterPage() {
       return;
     }
 
-    console.log(
-      JSON.stringify(
-        {
+    //POST CALL
+
+    try {
+      const res = await fetch(Register_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           firstName: formValues.firstName,
           lastName: formValues.lastName,
           email: formValues.email,
           password: formValues.password,
-          confirmPassword: formValues.confirmPassword,
-        },
-        null,
-        2,
-      ),
-    );
+        }),
+      });
 
-    setSuccessMessage("Registration form submitted successfully.");
+      const data = await res.text();
+      console.log(data);
+      setSuccessMessage("Registered successfully!");
+    } catch (err) {
+      console.log("Error:", err);
+    }
   };
 
   return (

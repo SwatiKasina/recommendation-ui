@@ -1,3 +1,4 @@
+"use client";
 import { TextField } from "@mui/material";
 import { ChangeEvent } from "react";
 
@@ -28,6 +29,9 @@ export default function InputTextField({
       value={value}
       onChange={onChange}
       helperText={helperText}
+      sx={{
+        backgroundColor: "pink",
+      }}
     />
   );
 }
