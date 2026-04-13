@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChangeEvent, FormEvent } from "react";
 import InputTextField from "../components/InputTextField";
 import { Box, Button, Paper, Typography } from "@mui/material";
@@ -8,6 +8,20 @@ import { Box, Button, Paper, Typography } from "@mui/material";
 export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [capcha, setCapcha] = useState("");
+  let changeValue = useRef(0);
+
+  let usernameTemp = "";
+
+  const handleUsenrameTempChange = (event: ChangeEvent<HTMLInputElement>) => {
+    usernameTemp = event.target.value;
+  };
+
+  const handleCapchaChange = (event: ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value?.replace(/[^@$]/g, "");
+    setCapcha(value);
+    changeValue.current++;
+  };
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setUserName(event.target.value);
@@ -21,6 +35,7 @@ export default function Login() {
     event.preventDefault();
     console.log(`Username: ${username}\nPassword: ${password}`);
   };
+
   return (
     <Box
       sx={{
@@ -66,6 +81,16 @@ export default function Login() {
             type="password"
             value={password}
             onChange={handlePasswordChange}
+          />
+
+          <InputTextField
+            label="capcha"
+            name="capcha"
+            type="text"
+            value={capcha}
+            onChange={(e) => {
+              handleCapchaChange(e);
+            }}
           />
 
           <Button type="submit" variant="contained" size="large" fullWidth>
