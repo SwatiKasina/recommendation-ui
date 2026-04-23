@@ -1,27 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ChangeEvent, FormEvent } from "react";
 import InputTextField from "../components/InputTextField";
-import { Box, Button, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+
+const LOGIN_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/user/login`;
 
 export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [capcha, setCapcha] = useState("");
-  let changeValue = useRef(0);
-
-  let usernameTemp = "";
-
-  const handleUsenrameTempChange = (event: ChangeEvent<HTMLInputElement>) => {
-    usernameTemp = event.target.value;
-  };
-
-  const handleCapchaChange = (event: ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value?.replace(/[^@$]/g, "");
-    setCapcha(value);
-    changeValue.current++;
-  };
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setUserName(event.target.value);
@@ -31,9 +27,38 @@ export default function Login() {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(`Username: ${username}\nPassword: ${password}`);
+
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      const response = await fetch(LOGIN_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Login failed, try again");
+      }
+
+      console.log("Login Success:", data);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,18 +108,31 @@ export default function Login() {
             onChange={handlePasswordChange}
           />
 
-          <InputTextField
-            label="capcha"
-            name="capcha"
-            type="text"
-            value={capcha}
-            onChange={(e) => {
-              handleCapchaChange(e);
-            }}
-          />
+          {errorMessage && (
+            <Typography color="error" variant="body2">
+              {errorMessage}
+            </Typography>
+          )}
 
-          <Button type="submit" variant="contained" size="large" fullWidth>
-            Login
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={isLoading}
+            sx={{
+              height: 45,
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
+          >
+            {isLoading ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={18} color="inherit" />
+                <span>Logging in...</span>
+              </Box>
+            ) : (
+              "Login"
+            )}
           </Button>
         </Box>
       </Paper>
